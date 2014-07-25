@@ -13,7 +13,7 @@ class HMACWrapper(CryptoBase):
         self._hash_function = _hash_function_from_alg(self.alg)
 
     def sign(self, data):
-        digester = hmac.HMAC(key=self.key, msg=data,
+        digester = hmac.new(key=self.key, msg=data,
                 digestmod=self._hash_function)
         return digester.digest()
 
