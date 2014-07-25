@@ -18,7 +18,7 @@ class Token(SignedObject):
         # cty - content type
         # ...
 
-        super(Token).__init__(payload, header, signature, *args, **kwargs)
+        super(Token, self).__init__(payload, header, signature, **kwargs)
 
     def get_claim_from_namespace(self, namespace, name, uuid_version=5):
         return self.get_claim(_create_uuid_name(namespace, name, uuid_version))
