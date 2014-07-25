@@ -3,14 +3,14 @@ class CryptoBase(object):
         self.alg = alg
         self.key = key
 
-    def decrypt(self, data):
+    def decrypt(self, data):  # pragma: no cover
         return NotImplemented
 
-    def encrypt(self, data):
+    def encrypt(self, data):  # pragma: no cover
         return NotImplemented
 
-    def sign(self, data):
+    def sign(self, data):  # pragma: no cover
         return NotImplemented
 
-    def verify(self, data, signature):
+    def verify(self, data, signature):  # pragma: no cover
         return NotImplemented
