@@ -1,5 +1,5 @@
 from jot.codec import base64url_decode
-from jot.deserialize import deserialize
+from jot.loaders import deserialize
 from jot.signed_object import SignedObject
 import unittest
 
