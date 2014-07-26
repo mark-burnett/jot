@@ -1,5 +1,5 @@
 from jot.codec import base64url_encode, base64url_decode
-from jot.crypto.hmac_wrapper import HMACWrapper
+from jot.crypto_wrappers.hmac_wrapper import HMACWrapper
 import unittest
 
 

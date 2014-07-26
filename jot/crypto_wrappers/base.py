@@ -1,4 +1,4 @@
-class CryptoBase(object):
+class CryptoWrapperBase(object):
     def __init__(self, alg, key):
         self.alg = alg
         self.key = key

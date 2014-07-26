@@ -1,4 +1,4 @@
-from jot.crypto_base import CryptoBase
+from .base import CryptoWrapperBase
 import hashlib
 import hmac
 import re
@@ -7,7 +7,7 @@ import re
 __all__ = ['HMACWrapper']
 
 
-class HMACWrapper(CryptoBase):
+class HMACWrapper(CryptoWrapperBase):
     def __init__(self, *args, **kwargs):
         super(HMACWrapper, self).__init__(*args, **kwargs)
         self._hash_function = _hash_function_from_alg(self.alg)
