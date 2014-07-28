@@ -53,7 +53,10 @@ class TestSerializeRoundTrip(unittest.TestCase):
             'header': {'typ': 'JWT', 'alg': 'HS256'},
             'payload': {'iss': 'joe', 'exp': 1300819380,
                 'http://example.com/is_root': True},
-            'key': base64url_decode(
+            'sign_key': base64url_decode(
+                'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
+                'aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'),
+            'verify_key': base64url_decode(
                 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
                 'aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'),
         },
@@ -63,14 +66,14 @@ class TestSerializeRoundTrip(unittest.TestCase):
         for data in self.sample_data:
             original_so = SignedObject(header=data['header'],
                     payload=data['payload'])
-            original_so.sign_with(data['key'])
+            original_so.sign_with(data['sign_key'])
 
             compact_serialization = original_so.compact_serialize()
 
             deserialized_so = deserialize(compact_serialization)
             self.assertIsInstance(deserialized_so, SignedObject)
 
-            self.assertTrue(deserialized_so.verify_with(data['key']))
+            self.assertTrue(deserialized_so.verify_with(data['verify_key']))
 
             self.assertEqual(deserialized_so.header, data['header'])
             self.assertEqual(deserialized_so.payload, data['payload'])
