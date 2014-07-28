@@ -1,4 +1,5 @@
 from . import exceptions
+from . import jose
 from .signed_object import SignedObject
 import uuid
 
@@ -25,6 +26,16 @@ class Token(SignedObject):
 
     def get_claim(self, name):
         return self.payload.get(name)
+
+    def _validate_payload(self, payload):
+        if isinstance(payload, jose.JOSEDictionary):
+            return payload
+
+        elif isinstance(payload, dict):
+            return jose.JOSEDictionary(payload)
+
+        else:
+            raise TypeError('"payload" must be a dict or JOSEDictionary')
 
     def _validate_and_set_jti(self, payload, generate_jti):
         if generate_jti:

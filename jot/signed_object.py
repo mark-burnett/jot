@@ -71,14 +71,7 @@ class SignedObject(jose.JOSEObject):
             raise TypeError('"header" must be a JOSEHeader')
 
     def _validate_payload(self, payload):
-        if isinstance(payload, jose.JOSEDictionary):
-            return payload
-
-        elif isinstance(payload, dict):
-            return jose.JOSEDictionary(payload)
-
-        else:
-            raise TypeError('"payload" must be a dict or JOSEDictionary')
+        return jose.factory(payload)
 
     def _validate_and_set_alg(self, alg):
         if 'alg' in self.header:

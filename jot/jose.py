@@ -8,6 +8,7 @@ __all__ = [
     'JOSEHeader',
     'JOSEObject',
     'JSONCompactSerializableMixin',
+    'factory',
 ]
 
 
@@ -28,3 +29,22 @@ class JOSEDictionary(dict, JSONCompactSerializableMixin): pass
 
 
 class JOSEHeader(JOSEDictionary): pass
+
+
+class JOSEOctetStream(JOSEObject, bytes):
+    def compact_serialize(self):
+        return base64url_encode(self)
+
+
+def factory(data):
+    if isinstance(data, JOSEObject):
+        return data
+
+    elif isinstance(data, dict):
+        return JOSEDictionary(data)
+
+    elif isinstance(data, bytes):
+        return JOSEOctetStream(data)
+
+    else:
+        raise TypeError('Data not convertible to a JOSEObject.')
