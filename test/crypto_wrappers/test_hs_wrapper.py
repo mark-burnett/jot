@@ -1,5 +1,5 @@
 from jot.codec import base64url_encode, base64url_decode
-from jot.crypto_wrappers.hmac_wrapper import HMACWrapper
+from jot.crypto_wrappers.hs_wrapper import HSWrapper
 import unittest
 
 
@@ -33,7 +33,7 @@ class TestSampleJWSDataFromSpec(unittest.TestCase):
             data_to_sign = '%s.%s' % (
                     data['encoded_header'], data['encoded_payload'])
 
-            wrapper = HMACWrapper(alg='HS256', key=data['key'])
+            wrapper = HSWrapper(alg='HS256', key=data['key'])
             signature = wrapper.sign(data_to_sign)
             encoded_signature = base64url_encode(signature)
 
@@ -44,6 +44,6 @@ class TestSampleJWSDataFromSpec(unittest.TestCase):
             data_to_sign = '%s.%s' % (
                     data['encoded_header'], data['encoded_payload'])
 
-            wrapper = HMACWrapper(alg='HS256', key=data['key'])
+            wrapper = HSWrapper(alg='HS256', key=data['key'])
             signature = base64url_decode(data['signature'])
             self.assertTrue(wrapper.verify(data_to_sign, signature))

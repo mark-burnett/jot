@@ -4,12 +4,12 @@ import hmac
 import re
 
 
-__all__ = ['HMACWrapper']
+__all__ = ['HSWrapper']
 
 
-class HMACWrapper(CryptoWrapperBase):
+class HSWrapper(CryptoWrapperBase):
     def __init__(self, *args, **kwargs):
-        super(HMACWrapper, self).__init__(*args, **kwargs)
+        super(HSWrapper, self).__init__(*args, **kwargs)
         self._hash_function = _hash_function_from_alg(self.alg)
 
     def sign(self, data):
