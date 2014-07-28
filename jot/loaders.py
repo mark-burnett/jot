@@ -31,7 +31,8 @@ def extract_header(serialized_jose_object):
     result = _EXTRACT_HEADER_REGEX.match(serialized_jose_object)
     header_part = result.group('header')
 
-    return jose.JOSEHeader(json.loads(codec.base64url_decode(header_part))), result.group('rest')
+    return (jose.JOSEHeader(json.loads(codec.base64url_decode(header_part))),
+            result.group('rest'))
 
 
 _DEFAULT_DESERIALIZER = next(pkg_resources.iter_entry_points(
