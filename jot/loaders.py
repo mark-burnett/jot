@@ -5,16 +5,16 @@ import pkg_resources
 import re
 
 
-__all__ = ['get_crytpo_wrapper', 'deserialize']
+__all__ = ['get_signer', 'deserialize']
 
 
-_REGISTERED_CRYPTO_WRAPPERS = {}
-for ep in pkg_resources.iter_entry_points('jot_crypto_wrappers'):
-    _REGISTERED_CRYPTO_WRAPPERS[re.compile(ep.name)] = ep.load()
+_REGISTERED_SIGNERS = {}
+for ep in pkg_resources.iter_entry_points('jot_signers'):
+    _REGISTERED_SIGNERS[re.compile(ep.name)] = ep.load()
 
 
-def get_crytpo_wrapper(alg, key):
-    for regex, wrapper in _REGISTERED_CRYPTO_WRAPPERS.iteritems():
+def get_signer(alg, key):
+    for regex, wrapper in _REGISTERED_SIGNERS.iteritems():
         if regex.match(alg):
             return wrapper(alg=alg, key=key)
 

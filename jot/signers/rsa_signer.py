@@ -1,17 +1,17 @@
-from .base import CryptoWrapperBase
-import Crypto.Hash
+from .base import Signer
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
+import Crypto.Hash
 import hashlib
 import re
 
 
-__all__ = ['RSWrapper']
+__all__ = ['RSASigner']
 
 
-class RSWrapper(CryptoWrapperBase):
+class RSASigner(Signer):
     def __init__(self, *args, **kwargs):
-        super(RSWrapper, self).__init__(*args, **kwargs)
+        super(RSASigner, self).__init__(*args, **kwargs)
         self.signer = PKCS1_v1_5.new(self.key)
 
     def sign(self, data):

@@ -1,15 +1,15 @@
-from .base import CryptoWrapperBase
+from .base import Signer
 import hashlib
 import hmac
 import re
 
 
-__all__ = ['HSWrapper']
+__all__ = ['HMACSigner']
 
 
-class HSWrapper(CryptoWrapperBase):
+class HMACSigner(Signer):
     def __init__(self, *args, **kwargs):
-        super(HSWrapper, self).__init__(*args, **kwargs)
+        super(HMACSigner, self).__init__(*args, **kwargs)
         self._hash_function = _hash_function_from_alg(self.alg)
 
     def sign(self, data):

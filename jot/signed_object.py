@@ -1,7 +1,7 @@
 from . import codec
 from . import exceptions
 from . import jose
-from .loaders import get_crytpo_wrapper
+from .loaders import get_signer
 
 
 __all__ = ['SignedObject']
@@ -34,12 +34,12 @@ class SignedObject(jose.JOSEObject):
         self.header['alg'] = value
 
     def sign_with(self, key):
-        wrapper = get_crytpo_wrapper(alg=self.alg, key=key)
+        wrapper = get_signer(alg=self.alg, key=key)
         self.signature = wrapper.sign(self._signed_data())
         return self.signature
 
     def verify_with(self, key):
-        wrapper = get_crytpo_wrapper(alg=self.alg, key=key)
+        wrapper = get_signer(alg=self.alg, key=key)
         return wrapper.verify(self._signed_data(), self.signature)
 
     def verify_with_kid(self, keychain):
