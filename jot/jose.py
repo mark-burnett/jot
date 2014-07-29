@@ -22,7 +22,8 @@ class JOSEObject(object):
 
 class JSONCompactSerializableMixin(JOSEObject):
     def compact_serialize(self):
-        return base64url_encode(json.dumps(self, separators=(',',':')))
+        return base64url_encode(json.dumps(self, separators=(',',':'),
+            sort_keys=True))
 
 
 class JOSEDictionary(dict, JSONCompactSerializableMixin): pass

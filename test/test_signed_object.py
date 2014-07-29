@@ -18,14 +18,14 @@ class TestSampleData(unittest.TestCase):
                 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
                 'aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'),
             'signature': base64url_decode(
-                'd6nMDXnJZfNNj-1o1e75s6d0six0lkLp5hSrGaz4o9A'),
+                'tu77b1J0ZCHMDd3tWZm36iolxZtBRaArSrtayOBDO34'),
             'compact_serialization':
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
                 '.'
-                'eyJpc3MiOiJqb2UiLCJleHAiOjEzMDA4MTkzODAsImh0dHA6Ly9leGFtcGxlLm'
-                    'NvbS9pc19yb290Ijp0cnVlfQ'
+                'eyJleHAiOjEzMDA4MTkzODAsImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ij'
+                    'p0cnVlLCJpc3MiOiJqb2UifQ'
                 '.'
-                'd6nMDXnJZfNNj-1o1e75s6d0six0lkLp5hSrGaz4o9A',
+                'tu77b1J0ZCHMDd3tWZm36iolxZtBRaArSrtayOBDO34',
         },
     ]
 
