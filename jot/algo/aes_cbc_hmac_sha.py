@@ -2,6 +2,7 @@ from Crypto.Cipher import AES
 import struct
 import hmac
 
+
 def encrypt(k, p, a, iv, hash_function):
     k_size = len(k) / 2
     mac_key = k[:k_size]
