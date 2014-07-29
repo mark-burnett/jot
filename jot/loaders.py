@@ -5,7 +5,18 @@ import pkg_resources
 import re
 
 
-__all__ = ['get_signer', 'deserialize']
+__all__ = ['get_cipher', 'get_signer', 'deserialize']
+
+
+_REGISTERED_CIPHERS = {}
+for ep in pkg_resources.iter_entry_points('jot_ciphers'):
+    _REGISTERED_CIPHERS[re.compile(ep.name)] = ep.load()
+
+
+def get_cipher(alg, key):
+    for regex, wrapper in _REGISTERED_CIPHERS.iteritems():
+        if regex.match(alg):
+            return wrapper(alg=alg, key=key)
 
 
 _REGISTERED_SIGNERS = {}
@@ -35,8 +46,6 @@ def extract_header(serialized_jose_object):
             result.group('rest'))
 
 
-_DEFAULT_DESERIALIZER = next(pkg_resources.iter_entry_points(
-    'jot_default_deserializer', 'default')).load()
 _DESERIALIZERS = {}
 for ep in pkg_resources.iter_entry_points('jot_deserializers'):
     _DESERIALIZERS[ep.name] = ep.load()
@@ -45,6 +54,3 @@ for ep in pkg_resources.iter_entry_points('jot_deserializers'):
 def lookup_deserializer(header):
     if 'typ' in header:
         return _DESERIALIZERS[header['typ'].upper()]
-
-    else:
-        return _DEFAULT_DESERIALIZER(header, rest)
