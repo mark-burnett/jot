@@ -1,3 +1,4 @@
+from .padding import pkcs_7_pad
 from Crypto.Cipher import AES
 import struct
 import hmac
@@ -8,15 +9,10 @@ def encrypt(k, p, a, iv, hash_function):
     mac_key = k[:k_size]
     enc_key = k[k_size:]
 
-    e = _encrypt(enc_key, iv, pad(p, len(enc_key)))
+    e = _encrypt(enc_key, iv, pkcs_7_pad(p, len(enc_key)))
     t = sign(mac_key, a, iv, e, hash_function)
 
     return e, t
-
-
-def pad(p, k):
-    num = k - (len(p) % k)
-    return p + num * struct.pack('B', num)
 
 
 def _encrypt(enc_key, iv, p):
