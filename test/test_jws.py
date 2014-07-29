@@ -125,3 +125,29 @@ class TestSerializeRoundTrip(unittest.TestCase):
 
             self.assertEqual(deserialized_so.header, data['header'])
             self.assertEqual(deserialized_so.payload, data['payload'])
+
+class VerifyInterop(unittest.TestCase):
+    sample_data = [
+        {
+            'compact_serialization':
+                'eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9'
+                '.'
+                'eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leG'
+                    'FtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ'
+                '.'
+                'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
+            'header': {'alg': 'HS256', 'typ': 'JWT'},
+            'payload': {'iss': 'joe', 'exp': 1300819380,
+                'http://example.com/is_root': True},
+            'verify_key': base64url_decode(
+                'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
+                'aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'),
+        },
+    ]
+
+    def test_verify_interop(self):
+        for data in self.sample_data:
+            so = deserialize(data['compact_serialization'])
+            self.assertEqual(so.header, data['header'])
+            self.assertEqual(so.payload, data['payload'])
+            self.assertTrue(so.verify_with(data['verify_key']))

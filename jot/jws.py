@@ -8,22 +8,47 @@ __all__ = ['JWS']
 
 
 class JWS(jose.JOSEObject):
-    def __init__(self, payload=None, header=None, signature=None, alg=None):
+    def __init__(self, payload=None, header=None, signature=None, alg=None,
+            _enc_header=None, _enc_payload=None, _enc_signature=None):
         self.header = self._validate_header(header)
         self.payload = self._validate_payload(payload)
 
-        self.signature = signature
         self._validate_and_set_alg(alg)
+
+        self._enc_header = _enc_header
+        self._enc_payload = _enc_payload
+        self._enc_signature = _enc_signature
+
+        if _enc_signature:
+            signature = codec.base64url_decode(_enc_signature)
+
+        self.signature = signature
+
+    @property
+    def encoded_header(self):
+        if self._enc_header is None:
+            self._enc_header = self.header.compact_serialize()
+        return self._enc_header
+
+    @property
+    def encoded_payload(self):
+        if self._enc_payload is None:
+            self._enc_payload = self.payload.compact_serialize()
+        return self._enc_payload
+
+    @property
+    def encoded_signature(self):
+        if self._enc_signature is None:
+            self._enc_signature = codec.base64url_encode(self.signature)
+        return self._enc_signature
 
     def compact_serialize(self):
         # error conditions:
         # - alg is not none and there is no sig
         # - alg is none and there is a sig
         # special case for alg = none:
-        return '%s.%s.%s' % (
-                self.header.compact_serialize(),
-                self.payload.compact_serialize(),
-                codec.base64url_encode(self.signature))
+        return '%s.%s.%s' % (self.encoded_header, self.encoded_payload,
+                self.encoded_signature)
 
     @property
     def alg(self):
@@ -54,8 +79,7 @@ class JWS(jose.JOSEObject):
         pass
 
     def _signed_data(self):
-        return '%s.%s' % (self.header.compact_serialize(),
-                self.payload.compact_serialize())
+        return '%s.%s' % (self.encoded_header, self.encoded_payload)
 
     def _validate_header(self, header):
         if header is None:

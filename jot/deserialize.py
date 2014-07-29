@@ -50,7 +50,9 @@ def _deserialize_jws_parts(enc_header, enc_payload, enc_signature=None):
     else:
         cls = jws.JWS
 
-    return cls(header=header, payload=payload, signature=signature)
+    return cls(header=header, payload=payload, signature=signature,
+            _enc_header=enc_header, _enc_payload=enc_payload,
+            _enc_signature=enc_signature)
 
 
 def deserialize(serialized_object):
