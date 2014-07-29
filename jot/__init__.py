@@ -1,4 +1,4 @@
-from .loaders import deserialize
+from .deserialize import deserialize
 from .jwe import JWE
 from .jws import JWS
 from .token import Token

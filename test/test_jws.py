@@ -1,6 +1,6 @@
 from Crypto.PublicKey import RSA
 from jot.codec import base64url_decode
-from jot.loaders import deserialize
+from jot import deserialize
 from jot.jws import JWS
 import unittest
 

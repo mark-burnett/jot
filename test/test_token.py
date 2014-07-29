@@ -1,5 +1,5 @@
 from jot.codec import base64url_decode
-from jot.loaders import deserialize
+from jot import deserialize
 from jot.token import Token
 import unittest
 
