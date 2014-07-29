@@ -1,11 +1,11 @@
-from .encrypted_object import EncryptedObject
 from .loaders import deserialize
+from .jwe import JWE
 from .jws import JWS
 from .token import Token
 
 
 __all__ = [
-    'EncryptedObject',
+    'JWE',
     'JWS',
     'Token',
     'deserialize',

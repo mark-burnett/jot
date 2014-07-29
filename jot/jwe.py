@@ -1,10 +1,10 @@
 from .jose import JOSEObject
 
 
-__all__ = ['EncryptedObject']
+__all__ = ['JWE']
 
 
-class EncryptedObject(JOSEObject):
+class JWE(JOSEObject):
     typ = 'JWE'
 
     def __init__(self, header, encrypted_key, initialization_vector,
