@@ -126,6 +126,7 @@ class TestSerializeRoundTrip(unittest.TestCase):
             self.assertEqual(deserialized_so.header, data['header'])
             self.assertEqual(deserialized_so.payload, data['payload'])
 
+
 class VerifyInterop(unittest.TestCase):
     sample_data = [
         {
