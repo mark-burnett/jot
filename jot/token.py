@@ -1,13 +1,13 @@
 from . import exceptions
 from . import jose
-from .signed_object import SignedObject
+from .jws import JWS
 import uuid
 
 
 __all__ = ['Token']
 
 
-class Token(SignedObject):
+class Token(JWS):
     def __init__(self, payload=None, header=None, signature=None,
             generate_jti=False, **kwargs):
         header = self._validate_header(header)

@@ -4,10 +4,10 @@ from . import jose
 from .loaders import get_signer
 
 
-__all__ = ['SignedObject']
+__all__ = ['JWS']
 
 
-class SignedObject(jose.JOSEObject):
+class JWS(jose.JOSEObject):
     def __init__(self, payload=None, header=None, signature=None, alg=None):
         self.header = self._validate_header(header)
         self.payload = self._validate_payload(payload)

@@ -1,7 +1,7 @@
 from Crypto.PublicKey import RSA
 from jot.codec import base64url_decode
 from jot.loaders import deserialize
-from jot.signed_object import SignedObject
+from jot.jws import JWS
 import unittest
 
 
@@ -31,19 +31,19 @@ class TestSampleData(unittest.TestCase):
 
     def test_sign_with(self):
         for data in self.sample_data:
-            so = SignedObject(header=data['header'], payload=data['payload'])
+            so = JWS(header=data['header'], payload=data['payload'])
             self.assertEqual(so.sign_with(data['sign_key']), data['signature'])
 
     def test_compact_serialize(self):
         for data in self.sample_data:
-            so = SignedObject(header=data['header'], payload=data['payload'])
+            so = JWS(header=data['header'], payload=data['payload'])
             so.sign_with(data['sign_key'])
             self.assertEqual(so.compact_serialize(),
                     data['compact_serialization'])
 
     def test_verify_with(self):
         for data in self.sample_data:
-            so = SignedObject(header=data['header'], payload=data['payload'],
+            so = JWS(header=data['header'], payload=data['payload'],
                     signature=data['signature'])
             self.assertTrue(so.verify_with(data['verify_key']))
 
@@ -112,14 +112,14 @@ class TestSerializeRoundTrip(unittest.TestCase):
 
     def test_round_trip(self):
         for data in self.sample_data:
-            original_so = SignedObject(header=data['header'],
+            original_so = JWS(header=data['header'],
                     payload=data['payload'])
             original_so.sign_with(data['sign_key'])
 
             compact_serialization = original_so.compact_serialize()
 
             deserialized_so = deserialize(compact_serialization)
-            self.assertIsInstance(deserialized_so, SignedObject)
+            self.assertIsInstance(deserialized_so, JWS)
 
             self.assertTrue(deserialized_so.verify_with(data['verify_key']))
 
