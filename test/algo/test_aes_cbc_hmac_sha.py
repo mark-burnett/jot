@@ -136,7 +136,7 @@ class TestAlgorithm(unittest.TestCase):
 #        },
     ]
 
-    def test_spec_samples(self):
+    def test_encrypt(self):
         for data in self.sample_data:
             print 'Checking %s...' % data['name']
             e, t = aes_cbc_hmac_sha.encrypt(k=data['k'], p=data['p'],
@@ -149,5 +149,16 @@ class TestAlgorithm(unittest.TestCase):
 
             self.assertEqual(e, data['e'])
             self.assertEqual(t, data['t'])
+            print 'Checking', data['name'], 'complete.'
+            print
+
+    def test_verify(self):
+        for data in self.sample_data:
+            print 'Checking %s...' % data['name']
+
+            self.assertTrue(aes_cbc_hmac_sha.verify(k=data['k'], e=data['e'],
+                a=data['a'], iv=data['iv'], t=data['t'],
+                hash_function=data['hash_function']))
+
             print 'Checking', data['name'], 'complete.'
             print
