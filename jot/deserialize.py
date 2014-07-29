@@ -7,6 +7,9 @@ import json
 import re
 
 
+__all__ = ['deserialize', 'deserialize_jwe', 'deserialize_jws']
+
+
 def deserialize_jwe(serialized_object):
     match = _JWE_REGEX.search(serialized_object)
     if match is None:
