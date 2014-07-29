@@ -1,4 +1,4 @@
-from .padding import pkcs_7_pad
+from .padding import pkcs_7_pad, pkcs_7_unpad
 from Crypto.Cipher import AES
 import struct
 import hmac
@@ -7,8 +7,11 @@ import hmac
 __all__ = ['decrypt', 'encrypt', 'verify']
 
 
-def decrypt():
-    pass
+def decrypt(k, e, iv):
+    mac_key, enc_key = _split_key(k)
+    padded_text = _decrypt(enc_key, iv, e)
+
+    return pkcs_7_unpad(padded_text)
 
 
 def encrypt(k, p, a, iv, hash_function):
@@ -30,6 +33,11 @@ def _split_key(k):
     mac_key = k[:k_size]
     enc_key = k[k_size:]
     return mac_key, enc_key
+
+
+def _decrypt(enc_key, iv, e):
+    a = AES.new(enc_key, mode=AES.MODE_CBC, IV=iv)
+    return a.decrypt(e)
 
 
 def _encrypt(enc_key, iv, p):

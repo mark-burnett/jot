@@ -162,3 +162,13 @@ class TestAlgorithm(unittest.TestCase):
 
             print 'Checking', data['name'], 'complete.'
             print
+
+    def test_decrypt(self):
+        for data in self.sample_data:
+            print 'Checking %s...' % data['name']
+
+            self.assertEqual(aes_cbc_hmac_sha.decrypt(k=data['k'], e=data['e'],
+                iv=data['iv']), data['p'])
+
+            print 'Checking', data['name'], 'complete.'
+            print
