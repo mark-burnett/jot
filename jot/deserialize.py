@@ -7,13 +7,6 @@ import json
 import re
 
 
-_JWE_REGEX = re.compile(r'^([\w_-]+)\.([\w_-]+)\.([\w_-]+)\.([\w_-]+)\.([\w_-]+)$')
-_JWS_REGEX = re.compile(r'^([\w_-]+)\.([\w_-]+)(?:\.([\w_-]+))?$')
-
-
-_JWE_JWS_REGEX = re.compile(r'^([\w_-]+)\.([\w_-]+)(?:\.([\w_-]+)(?:\.([\w_-]+)\.([\w_-]+))?)?$')
-
-
 def deserialize_jwe(serialized_object):
     match = _JWE_REGEX.search(serialized_object)
     if match is None:
@@ -55,15 +48,20 @@ def _deserialize_jws_parts(enc_header, enc_payload, enc_signature=None):
             _enc_signature=enc_signature)
 
 
+_JWE_REGEX = re.compile(r'^([\w_-]+)\.([\w_-]*)\.([\w_-]*)\.([\w_-]+)\.([\w_-]*)$')
+_JWS_REGEX = re.compile(r'^([\w_-]+)\.([\w_-]+)(?:\.([\w_-]+))?$')
+
+
+_REGEXES = {
+    _JWS_REGEX: _deserialize_jws_parts,
+    _JWE_REGEX: _deserialize_jwe_parts,
+}
+
+
 def deserialize(serialized_object):
-    match = _JWE_JWS_REGEX.search(serialized_object)
-    if match is None:
-        raise exceptions.InvalidSerialization()
+    for regex, factory in _REGEXES.iteritems():
+        match = regex.search(serialized_object)
+        if match:
+            return factory(*match.groups())
 
-    parts = match.groups()
-
-    if parts[-1] is None:
-        return _deserialize_jws_parts(*parts[:3])
-
-    else:
-        return _deserialize_jwe_parts(*parts)
+    raise exceptions.InvalidSerialization()
