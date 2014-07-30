@@ -32,6 +32,24 @@ class JOSEDictionary(dict, JSONCompactSerializableMixin): pass
 class JOSEHeader(JOSEDictionary): pass
 
 
+class JOSEObjectWithHeader(JOSEObject):
+    def __init__(self, header, *args, **kwargs):
+        self.header = self._validate_header(header)
+
+    def _validate_header(self, header):
+        if header is None:
+            return JOSEHeader()
+
+        elif isinstance(header, JOSEHeader):
+            return header
+
+        elif isinstance(header, dict):
+            return JOSEHeader(header)
+
+        else:
+            raise TypeError('"header" must be a JOSEHeader')
+
+
 class JOSEOctetStream(JOSEObject, bytes):
     def compact_serialize(self):
         return base64url_encode(self)

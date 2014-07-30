@@ -7,10 +7,10 @@ from .loaders import get_signer
 __all__ = ['JWS']
 
 
-class JWS(jose.JOSEObject):
+class JWS(jose.JOSEObjectWithHeader):
     def __init__(self, payload=None, header=None, signature=None, alg=None,
             _enc_header=None, _enc_payload=None, _enc_signature=None):
-        self.header = self._validate_header(header)
+        super(JWS, self).__init__(header=header)
         self.payload = self._validate_payload(payload)
 
         self._validate_and_set_alg(alg)
@@ -80,19 +80,6 @@ class JWS(jose.JOSEObject):
 
     def _signed_data(self):
         return '%s.%s' % (self.encoded_header, self.encoded_payload)
-
-    def _validate_header(self, header):
-        if header is None:
-            return jose.JOSEHeader()
-
-        elif isinstance(header, jose.JOSEHeader):
-            return header
-
-        elif isinstance(header, dict):
-            return jose.JOSEHeader(header)
-
-        else:
-            raise TypeError('"header" must be a JOSEHeader')
 
     def _validate_payload(self, payload):
         return jose.factory(payload)
