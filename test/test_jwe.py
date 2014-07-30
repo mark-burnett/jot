@@ -1,4 +1,5 @@
 from Crypto.PublicKey import RSA
+from jot import deserialize, JWE
 from jot.codec import base64url_decode
 import unittest
 
@@ -42,7 +43,7 @@ cKqsC2Blwu1O7TPoV6ajuGixg9QJDEqNy4AzYMJcmqFOQY8cYtEjUtOlxgsbJ1Uz
 -----END PUBLIC KEY-----'''
 
 
-class TestEncryptionRoundTrip(unittest.TestCase):
+class TestEncryptionConsistency(unittest.TestCase):
     sample_data = [
         {
             'header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
@@ -54,48 +55,76 @@ class TestEncryptionRoundTrip(unittest.TestCase):
     ]
 
     def test_round_trip(self):
-        pass
+        for data in self.sample_data:
+            initial_jwe = JWE(header=data['header'], payload=data['payload'])
+            initial_jwe.encrypt_with(data['encrypt_key'])
+            serialization = initial_jwe.compact_serialize()
+
+            second_jwe = deserialize(serialization)
+            second_jwe.verify_and_decrypt_with(data['decrypt_key'])
+            self.assertEqual(second_jwe.payload, data['payload'])
 
     def test_ciphertext_different_each_time(self):
-        pass
-
-
-class TestEncryptionInterop(unittest.TestCase):
-    sample_data = [
-        {
-            'decrypt_key': RSA.construct((base64url_decode(
-                    'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1Wl'
-                    'UzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDpre'
-                    'cbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_'
-                    '7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBI'
-                    'Y2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU'
-                    '7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw'
-                ),
-                base64url_decode('AQAB'),
-            )),
-            'expected_header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
-            'expected_payload': 'Live long and prosper.',
-            'compact_serialization':
-                'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.'
-                '6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.'
-                'AxY8DCtDaGlsbGljb3RoZQ.'
-                'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
-                'U0m_YmjN04DJvceFICbCVQ',
-        },
-    ]
-
-    def test_header(self):
         for data in self.sample_data:
-            jwe = deserialize(data['compact_serialization'])
-            self.assertEqual(jwe.header, data['header'])
+            jwe1 = JWE(header=data['header'], payload=data['payload'])
+            jwe1.encrypt_with(data['encrypt_key'])
+            serialization1 = jwe1.compact_serialize()
 
-    def test_verify(self):
-        for data in self.sample_data:
-            jwe = deserialize(data['compact_serialization'])
-            self.assertTrue(jwe.verify_with(data['decrypt_key']))
+            jwe2 = JWE(header=data['header'], payload=data['payload'])
+            jwe2.encrypt_with(data['encrypt_key'])
+            serialization2 = jwe2.compact_serialize()
 
-    def test_decrypt(self):
-        for data in self.sample_data:
-            jwe = deserialize(data['compact_serialization'])
-            self.assertEqual(jwe.decrypt_with(data['decrypt_key']),
-                    data['expected_payload'])
+            self.assertNotEqual(serialization1, serialization2)
+
+
+#SPEC_PRIV_KEY = RSA.construct((
+#    long(base64url_decode(
+#            'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1'
+#            'WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxk'
+#            'nTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_Nxs'
+#            'iIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4L'
+#            'KjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZ'
+#            'I0KQB0GaDWFLN-aEAw3vRw'
+#        ).encode('hex'), 16),
+#    long(base64url_decode('AQAB').encode('hex'), 16),
+#    long(base64url_decode(
+#            'VFCWOqXr8nvZNyaaJLXdnNPXZKRaWCjkU5Q2egQQpTBMwhprMzWzpR8Sx'
+#            'q1OPThh_J6MUD8Z35wky9b8eEO0pwNS8xlh1lOFRRBoNqDIKVOku0aZb-rynq8cxjD'
+#            'TLZQ6Fz7jSjR1Klop-YKaUHc9GsEofQqYruPhzSA-QgajZGPbE_0ZaVDJHfyd7UUBU'
+#            'KunFMScbflYAAOYJqVIVwaYR5zWEEceUjNnTNo_CVSj-VvXLO5VZfCUAVLgW4dpf1S'
+#            'rtZjSt34YLsRarSb127reG_DUwg9Ch-KyvjT1SkHgUWRVGcyly7uvVGRSDwsXypdrN'
+#            'inPA4jlhoNdizK2zF2CWQ'
+#        ).encode('hex'), 16)
+#    ))
+
+
+#class TestSpecSample(unittest.TestCase):
+#    sample_data = [
+#        {
+#            'compact_serialization':
+#                'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.'
+#                '6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.'
+#                'AxY8DCtDaGlsbGljb3RoZQ.'
+#                'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
+#                'U0m_YmjN04DJvceFICbCVQ',
+#            'expected_header': {'alg': 'A128KW', 'enc': 'A128CBC-HS256'},
+#            'decrypt_key': SPEC_PRIV_KEY,
+#            'expected_payload': 'Live long and prosper.',
+#        },
+#    ]
+#
+#    def test_header(self):
+#        for data in self.sample_data:
+#            jwe = deserialize(data['compact_serialization'])
+#            self.assertEqual(jwe.header, data['expected_header'])
+#
+#    def test_verify(self):
+#        for data in self.sample_data:
+#            jwe = deserialize(data['compact_serialization'])
+#            self.assertTrue(jwe.verify_with(data['decrypt_key']))
+#
+#    def test_decrypt(self):
+#        for data in self.sample_data:
+#            jwe = deserialize(data['compact_serialization'])
+#            self.assertEqual(jwe.decrypt_with(data['decrypt_key']),
+#                    data['expected_payload'])

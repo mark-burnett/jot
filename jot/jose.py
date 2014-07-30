@@ -49,10 +49,20 @@ class JOSEObjectWithHeader(JOSEObject):
         else:
             raise TypeError('"header" must be a JOSEHeader')
 
-
 class JOSEOctetStream(JOSEObject, bytes):
     def compact_serialize(self):
         return base64url_encode(self)
+
+
+class JOSEString(JOSEObject, str):
+    def compact_serialize(self):
+        return base64url_encode(self)
+
+
+class JOSEUnicode(JOSEObject, unicode):
+    def compact_serialize(self):
+        return base64url_encode(self)
+
 
 
 def factory(data):
@@ -61,6 +71,12 @@ def factory(data):
 
     elif isinstance(data, dict):
         return JOSEDictionary(data)
+
+    elif isinstance(data, unicode):
+        return JOSEUnicode(data)
+
+    elif isinstance(data, str):
+        return JOSEString(data)
 
     elif isinstance(data, bytes):
         return JOSEOctetStream(data)

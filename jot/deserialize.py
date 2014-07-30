@@ -20,7 +20,24 @@ def deserialize_jwe(serialized_object):
 
 def _deserialize_jwe_parts(enc_header, enc_encrypted_key,
         enc_initialization_vector, enc_ciphertext, enc_authentication_tag):
-    pass
+    header = json.loads(codec.base64url_decode(enc_header))
+    encrypted_key = codec.base64url_decode(enc_encrypted_key)
+    initialization_vector = codec.base64url_decode(enc_initialization_vector)
+    ciphertext = codec.base64url_decode(enc_ciphertext)
+    authentication_tag = codec.base64url_decode(enc_authentication_tag)
+
+    return jwe.JWE(
+        header=header,
+        encrypted_key=encrypted_key,
+        initialization_vector=initialization_vector,
+        ciphertext=ciphertext,
+        authentication_tag=authentication_tag,
+        _enc_header=enc_header,
+        _enc_encrypted_key=enc_encrypted_key,
+        _enc_initialization_vector=enc_initialization_vector,
+        _enc_ciphertext=enc_ciphertext,
+        _enc_authentication_tag=enc_authentication_tag,
+    )
 
 
 def deserialize_jws(serialized_object):
