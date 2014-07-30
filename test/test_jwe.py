@@ -77,54 +77,54 @@ class TestEncryptionConsistency(unittest.TestCase):
             self.assertNotEqual(serialization1, serialization2)
 
 
-#SPEC_PRIV_KEY = RSA.construct((
-#    long(base64url_decode(
-#            'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1'
-#            'WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxk'
-#            'nTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_Nxs'
-#            'iIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4L'
-#            'KjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZ'
-#            'I0KQB0GaDWFLN-aEAw3vRw'
-#        ).encode('hex'), 16),
-#    long(base64url_decode('AQAB').encode('hex'), 16),
-#    long(base64url_decode(
-#            'VFCWOqXr8nvZNyaaJLXdnNPXZKRaWCjkU5Q2egQQpTBMwhprMzWzpR8Sx'
-#            'q1OPThh_J6MUD8Z35wky9b8eEO0pwNS8xlh1lOFRRBoNqDIKVOku0aZb-rynq8cxjD'
-#            'TLZQ6Fz7jSjR1Klop-YKaUHc9GsEofQqYruPhzSA-QgajZGPbE_0ZaVDJHfyd7UUBU'
-#            'KunFMScbflYAAOYJqVIVwaYR5zWEEceUjNnTNo_CVSj-VvXLO5VZfCUAVLgW4dpf1S'
-#            'rtZjSt34YLsRarSb127reG_DUwg9Ch-KyvjT1SkHgUWRVGcyly7uvVGRSDwsXypdrN'
-#            'inPA4jlhoNdizK2zF2CWQ'
-#        ).encode('hex'), 16)
-#    ))
+SPEC_PRIV_KEY = RSA.construct((
+    long(base64url_decode(
+            'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1'
+            'WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxk'
+            'nTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_Nxs'
+            'iIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4L'
+            'KjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZ'
+            'I0KQB0GaDWFLN-aEAw3vRw'
+        ).encode('hex'), 16),
+    long(base64url_decode('AQAB').encode('hex'), 16),
+    long(base64url_decode(
+            'VFCWOqXr8nvZNyaaJLXdnNPXZKRaWCjkU5Q2egQQpTBMwhprMzWzpR8Sx'
+            'q1OPThh_J6MUD8Z35wky9b8eEO0pwNS8xlh1lOFRRBoNqDIKVOku0aZb-rynq8cxjD'
+            'TLZQ6Fz7jSjR1Klop-YKaUHc9GsEofQqYruPhzSA-QgajZGPbE_0ZaVDJHfyd7UUBU'
+            'KunFMScbflYAAOYJqVIVwaYR5zWEEceUjNnTNo_CVSj-VvXLO5VZfCUAVLgW4dpf1S'
+            'rtZjSt34YLsRarSb127reG_DUwg9Ch-KyvjT1SkHgUWRVGcyly7uvVGRSDwsXypdrN'
+            'inPA4jlhoNdizK2zF2CWQ'
+        ).encode('hex'), 16)
+    ))
 
 
-#class TestSpecSample(unittest.TestCase):
-#    sample_data = [
-#        {
-#            'compact_serialization':
-#                'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.'
-#                '6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.'
-#                'AxY8DCtDaGlsbGljb3RoZQ.'
-#                'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
-#                'U0m_YmjN04DJvceFICbCVQ',
-#            'expected_header': {'alg': 'A128KW', 'enc': 'A128CBC-HS256'},
-#            'decrypt_key': SPEC_PRIV_KEY,
-#            'expected_payload': 'Live long and prosper.',
-#        },
-#    ]
-#
-#    def test_header(self):
-#        for data in self.sample_data:
-#            jwe = deserialize(data['compact_serialization'])
-#            self.assertEqual(jwe.header, data['expected_header'])
-#
-#    def test_verify(self):
-#        for data in self.sample_data:
-#            jwe = deserialize(data['compact_serialization'])
-#            self.assertTrue(jwe.verify_with(data['decrypt_key']))
-#
-#    def test_decrypt(self):
-#        for data in self.sample_data:
-#            jwe = deserialize(data['compact_serialization'])
-#            self.assertEqual(jwe.decrypt_with(data['decrypt_key']),
-#                    data['expected_payload'])
+class TestSpecSample(unittest.TestCase):
+    sample_data = [
+        {
+            'compact_serialization':
+                'eyJhbGciOiJSU0ExXzUiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.'
+                'UGhIOguC7IuEvf_NPVaXsGMoLOmwvc1GyqlIKOK1nN94nHPoltGRhWhw7Zx0-kFm'
+                '1NJn8LE9XShH59_i8J0PH5ZZyNfGy2xGdULU7sHNF6Gp2vPLgNZ__deLKxGHZ7Pc'
+                'HALUzoOegEI-8E66jX2E4zyJKx-YxzZIItRzC5hlRirb6Y5Cl_p-ko3YvkkysZIF'
+                'NPccxRU7qve1WYPxqbb2Yw8kZqa2rMWI5ng8OtvzlV7elprCbuPhcCdZ6XDP0_F8'
+                'rkXds2vE4X-ncOIM8hAYHHi29NX0mcKiRaD0-D-ljQTP-cFPgwCp6X-nZZd9OHBv'
+                '-B3oWh2TbqmScqXMR4gp_A.'
+                'AxY8DCtDaGlsbGljb3RoZQ.'
+                'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
+                '9hH0vgRfYgPnAHOd8stkvw',
+            'expected_header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
+            'decrypt_key': SPEC_PRIV_KEY,
+            'expected_payload': 'Live long and prosper.',
+        },
+    ]
+
+    def test_header(self):
+        for data in self.sample_data:
+            jwe = deserialize(data['compact_serialization'])
+            self.assertEqual(jwe.header, data['expected_header'])
+
+    def test_decrypt(self):
+        for data in self.sample_data:
+            jwe = deserialize(data['compact_serialization'])
+            jwe.verify_and_decrypt_with(data['decrypt_key'])
+            self.assertEqual(jwe.payload, data['expected_payload'])
