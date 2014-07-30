@@ -116,6 +116,17 @@ class TestSpecSample(unittest.TestCase):
             'decrypt_key': SPEC_PRIV_KEY,
             'expected_payload': 'Live long and prosper.',
         },
+        {
+            'compact_serialization':
+                'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.'
+                '6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.'
+                'AxY8DCtDaGlsbGljb3RoZQ.'
+                'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
+                'U0m_YmjN04DJvceFICbCVQ',
+            'expected_header': {'alg': 'A128KW', 'enc': 'A128CBC-HS256'},
+            'decrypt_key': base64url_decode('GawgguFyGrWKav7AX4VKUg'),
+            'expected_payload': 'Live long and prosper.',
+        },
     ]
 
     def test_header(self):

@@ -1,6 +1,7 @@
 class InvalidAlg(ValueError): pass
 class InvalidClaim(ValueError): pass
 class InvalidCiphertext(ValueError): pass
+class InvalidEncryptedKey(ValueError): pass
 class InvalidHeader(ValueError): pass
 class InvalidSerialization(ValueError): pass
 class InvalidSignature(Exception): pass
