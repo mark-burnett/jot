@@ -1,4 +1,5 @@
 from Crypto.PublicKey import RSA
+from jot.codec import base64url_decode
 import unittest
 
 
@@ -57,3 +58,44 @@ class TestEncryptionRoundTrip(unittest.TestCase):
 
     def test_ciphertext_different_each_time(self):
         pass
+
+
+class TestEncryptionInterop(unittest.TestCase):
+    sample_data = [
+        {
+            'decrypt_key': RSA.construct((base64url_decode(
+                    'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1Wl'
+                    'UzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDpre'
+                    'cbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_'
+                    '7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBI'
+                    'Y2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU'
+                    '7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw'
+                ),
+                base64url_decode('AQAB'),
+            )),
+            'expected_header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
+            'expected_payload': 'Live long and prosper.',
+            'compact_serialization':
+                'eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.'
+                '6KB707dM9YTIgHtLvtgWQ8mKwboJW3of9locizkDTHzBC2IlrT1oOQ.'
+                'AxY8DCtDaGlsbGljb3RoZQ.'
+                'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
+                'U0m_YmjN04DJvceFICbCVQ',
+        },
+    ]
+
+    def test_header(self):
+        for data in self.sample_data:
+            jwe = deserialize(data['compact_serialization'])
+            self.assertEqual(jwe.header, data['header'])
+
+    def test_verify(self):
+        for data in self.sample_data:
+            jwe = deserialize(data['compact_serialization'])
+            self.assertTrue(jwe.verify_with(data['decrypt_key']))
+
+    def test_decrypt(self):
+        for data in self.sample_data:
+            jwe = deserialize(data['compact_serialization'])
+            self.assertEqual(jwe.decrypt_with(data['decrypt_key']),
+                    data['expected_payload'])

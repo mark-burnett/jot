@@ -35,5 +35,7 @@ class JWE(JOSEObject):
         self.header['enc'] = value
 
     def decrypt_with(self, key):
-        # Probably need more arguments
+        pass
+
+    def verify_with(self, key):
         pass
