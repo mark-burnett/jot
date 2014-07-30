@@ -1,5 +1,6 @@
 import pkg_resources
 import re
+from . import exceptions
 
 
 __all__ = ['get_alg_cipher', 'get_enc_cipher', 'get_signer']
@@ -14,6 +15,7 @@ def get_alg_cipher(alg, key):
     for regex, wrapper in _REGISTERED_ALG_CIPHERS.iteritems():
         if regex.match(alg):
             return wrapper(alg=alg, key=key)
+    raise exceptions.UnrecognizedAlg(alg)
 
 
 _REGISTERED_ENC_CIPHERS = {}
@@ -26,6 +28,7 @@ def get_enc_cipher(enc, key=None, initialization_vector=None):
         if regex.match(enc):
             return wrapper(enc=enc, key=key,
                     initialization_vector=initialization_vector)
+    raise exceptions.UnrecognizedEnc(enc)
 
 
 _REGISTERED_SIGNERS = {}
@@ -37,3 +40,4 @@ def get_signer(alg, key):
     for regex, wrapper in _REGISTERED_SIGNERS.iteritems():
         if regex.match(alg):
             return wrapper(alg=alg, key=key)
+    raise exceptions.UnrecognizedAlg(alg)
