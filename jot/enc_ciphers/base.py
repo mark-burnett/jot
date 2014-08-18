@@ -38,10 +38,3 @@ class EncCipher(object):
     def verify(self, ciphertext, header,
             authentication_tag):  # pragma: no cover
         return NotImplemented
-
-    def decrypt_and_verify(self, ciphertext, header, authentication_tag):
-        if self.verify(ciphertext, header, authentication_tag):
-            return self.decrypt(ciphertext)
-
-        else:
-            raise exceptions.InvalidSignature()

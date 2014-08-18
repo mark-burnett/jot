@@ -10,7 +10,8 @@ class TestSampleData(unittest.TestCase):
         {
             'header': {'typ': 'JWT', 'alg': 'HS256'},
             'sign_alg': 'HS256',
-            'claims': {'iss': 'joe', 'exp': 1300819380,
+            'payload_class': Token,
+            'payload': {'iss': 'joe', 'exp': 1300819380,
                 'http://example.com/is_root': True},
             'sign_key': base64url_decode(
                 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
@@ -37,7 +38,7 @@ class TestSampleData(unittest.TestCase):
 
     def test_sign_with(self):
         for data in self.sample_data:
-            t = Token(claims=data['claims'])
+            t = data['payload_class'](data['payload'])
             jws = t.sign_with(data['sign_key'], alg=data['sign_alg'])
             self.assertEqual(jws.signature, data['signature'])
 

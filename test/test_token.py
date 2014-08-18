@@ -63,14 +63,14 @@ class TestTokenRoundTrip(unittest.TestCase):
 
         {
             'sign_alg': 'RS256',
-            'encrypt_alg': 'RSA1_5',
+            'encrypt_alg': 'A256KW',
             'encrypt_enc': 'A256CBC-HS512',
             'claims': {'iss': 'joe', 'exp': 1300819380,
                 'http://example.com/is_root': True},
             'sign_key': RSA.importKey(PRIVATE_KEY),
             'verify_key': RSA.importKey(PUBLIC_KEY),
-            'encrypt_key': RSA.importKey(PUBLIC_KEY),
-            'decrypt_key': RSA.importKey(PRIVATE_KEY),
+            'encrypt_key': base64url_decode('IzYwJpMVvEFc5WJWd5Uebw'),
+            'decrypt_key': base64url_decode('IzYwJpMVvEFc5WJWd5Uebw'),
         },
     ]
 

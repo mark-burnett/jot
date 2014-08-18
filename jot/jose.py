@@ -138,7 +138,7 @@ class JOSEObjectWithHeader(JOSEObject):
 
     @abc.abstractmethod
     def compact_serialize_without_header(self):
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def _validate_header(self, header):
         if header is None:
