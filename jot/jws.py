@@ -1,67 +1,62 @@
 from . import codec
 from . import exceptions
 from . import jose
+from . import token
 from .loaders import get_signer
+import json
 
 
 __all__ = ['JWS']
 
 
+def _simple_parse(data):
+    return json.loads(codec.base64url_decode(data))
+
+
 class JWS(jose.JOSEObjectWithHeader):
-    def __init__(self, payload=None, header=None, signature=None, alg=None,
-            _enc_header=None, _enc_payload=None, _enc_signature=None):
+    def __init__(self, encoded_payload=None, encoded_header=None,
+            encoded_signature=None, signature=None):
+        self.encoded_header = encoded_header
+        self.encoded_payload = encoded_payload
+
+        if encoded_signature:
+            self.encoded_signature = encoded_signature
+            self.signature = codec.base64url_decode(encoded_signature)
+
+        elif signature:
+            self.signature = signature
+            self.encoded_signature = codec.base64url_encode(signature)
+
+        else:
+            self.encoded_signature = None
+            self.signature = None
+
+        header = jose.JOSEHeader(_simple_parse(encoded_header))
         super(JWS, self).__init__(header=header)
-        self.payload = self._validate_payload(payload)
-
-        self._validate_and_set_alg(alg)
-
-        self._enc_header = _enc_header
-        self._enc_payload = _enc_payload
-        self._enc_signature = _enc_signature
-
-        if _enc_signature:
-            signature = codec.base64url_decode(_enc_signature)
-
-        self.signature = signature
-
-    @property
-    def encoded_header(self):
-        if self._enc_header is None:
-            self._enc_header = self.header.compact_serialize()
-        return self._enc_header
-
-    @property
-    def encoded_payload(self):
-        if self._enc_payload is None:
-            self._enc_payload = self.payload.compact_serialize()
-        return self._enc_payload
-
-    @property
-    def encoded_signature(self):
-        if self._enc_signature is None:
-            self._enc_signature = codec.base64url_encode(self.signature)
-        return self._enc_signature
 
     def compact_serialize(self):
-        # error conditions:
-        # - alg is not none and there is no sig
-        # - alg is none and there is a sig
-        # special case for alg = none:
-        return '%s.%s.%s' % (self.encoded_header, self.encoded_payload,
+        return '%s.%s.%s' % (
+                self.encoded_header,
+                self.encoded_payload,
                 self.encoded_signature)
+
+    def compact_serialize_without_header(self):
+        return '%s.%s' % (
+                self.encoded_payload,
+                self.encoded_signature)
+
+    @property
+    def payload(self):
+        pl_obj = jose.factory(_simple_parse(self.encoded_payload))
+        if self.header.get('typ', '').upper() == 'JWT':
+            return token.Token(header=self.header, claims=pl_obj)
+
+        else:
+            return pl_obj
 
     @property
     def alg(self):
         return self.header['alg']
-
-    @alg.setter
-    def alg(self, value):
-        self.header['alg'] = value
-
-    def sign_with(self, key):
-        wrapper = get_signer(alg=self.alg, key=key)
-        self.signature = wrapper.sign(self._signed_data())
-        return self.signature
 
     def verify_with(self, key):
         wrapper = get_signer(alg=self.alg, key=key)
@@ -74,22 +69,15 @@ class JWS(jose.JOSEObjectWithHeader):
 
         return self.verify_with(keychain[kid])
 
-    def encrypt_with(self, key):
-        # returns a JWE object
-        pass
-
     def _signed_data(self):
+#        print self.header
+#        print self.header.compact_serialize()
+#        print self.encoded_header
+#        print codec.base64url_decode(self.encoded_header)
+
+#        print self.payload_object.signed_payload()
+#        print self.payload_object.signed_payload().compact_serialize()
+#        print self.encoded_payload
+#        print codec.base64url_decode(self.encoded_payload)
+
         return '%s.%s' % (self.encoded_header, self.encoded_payload)
-
-    def _validate_payload(self, payload):
-        return jose.factory(payload)
-
-    def _validate_and_set_alg(self, alg):
-        if 'alg' in self.header:
-            if alg and alg != self.header['alg']:
-                raise exceptions.InvalidAlg(
-                        'Specified alg (%s) does not match the exising value '
-                        'in the header (%s).' % (alg, self.header['alg']))
-
-        else:
-            self.header['alg'] = alg or DEFAULT_ALG

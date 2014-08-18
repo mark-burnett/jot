@@ -3,6 +3,7 @@ from . import exceptions
 from . import jwe
 from . import jws
 from . import token
+from . import jose
 import json
 import re
 
@@ -49,28 +50,8 @@ def deserialize_jws(serialized_object):
 
 
 def _deserialize_jws_parts(enc_header, enc_payload, enc_signature=None):
-    header = json.loads(codec.base64url_decode(enc_header))
-    payload = json.loads(codec.base64url_decode(enc_payload))
-
-    if enc_signature is None:
-        signature = None
-
-    else:
-        signature = codec.base64url_decode(enc_signature)
-
-    if header.get('typ'):
-        cls = token.Token
-    else:
-        cls = jws.JWS
-
-    return cls(
-        header=header,
-        payload=payload,
-        signature=signature,
-        _enc_header=enc_header,
-        _enc_payload=enc_payload,
-        _enc_signature=enc_signature,
-    )
+    return jws.JWS(encoded_header=enc_header,
+            encoded_payload=enc_payload, encoded_signature=enc_signature)
 
 
 _JWE_REGEX = re.compile(r'^([\w_-]+)\.([\w_-]*)\.([\w_-]*)\.([\w_-]+)\.([\w_-]*)$')

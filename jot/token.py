@@ -1,60 +1,64 @@
 from . import exceptions
 from . import jose
-from .jws import JWS
 import uuid
 
 
 __all__ = ['Token']
 
 
-class Token(JWS):
-    def __init__(self, payload=None, header=None, signature=None,
-            generate_jti=False, **kwargs):
-        header = self._validate_header(header)
-        header = self._validate_and_set_typ(header)
+class Token(jose.JOSEObjectWithHeader):
+    def __init__(self, claims=None, header=None, generate_jti=False, **kwargs):
+        super(Token, self).__init__(header=header)
+        claims = self._validate_claims(claims)
+        claims = self._validate_and_set_jti(claims, generate_jti)
 
-        payload = self._validate_payload(payload)
-        payload = self._validate_and_set_jti(payload, generate_jti)
-        # expire time
-        # cty - content type
-        # ...
+        self.claims = claims
 
-        super(Token, self).__init__(payload, header, signature, **kwargs)
+    def compact_serialize(self):
+        return '%s.%s' % (self.header.compact_serialize(),
+                self.claims.compact_serialize())
+
+    def compact_serialize_without_header(self):
+        return self.claims.compact_serialize()
+
+    def signed_payload(self):
+        return self.claims
+
+    def signed_header(self, alg):
+        header = super(Token, self).signed_header(alg)
+        header['typ'] = 'JWT'
+        return header
+
+    def _validate_claims(self, claims):
+        if isinstance(claims, jose.JOSEDictionary):
+            return claims
+
+        elif isinstance(claims, dict):
+            return jose.JOSEDictionary(claims)
+
+        elif claims is None:
+            return jose.JOSEDictionary()
+
+        else:
+            raise TypeError('"claims" must be a dict or JOSEDictionary')
+
+    def _validate_and_set_jti(self, claims, generate_jti):
+        if generate_jti:
+            if 'jti' in claims:
+                raise exceptions.InvalidClaim(
+                    'Cannot specify "generate_jti" with existing "jti" claim.')
+
+            else:
+                claims['jti'] = _generate_jti()
+
+        return claims
+
 
     def get_claim_from_namespace(self, namespace, name, uuid_version=5):
         return self.get_claim(_create_uuid_name(namespace, name, uuid_version))
 
     def get_claim(self, name):
-        return self.payload.get(name)
-
-    def _validate_payload(self, payload):
-        if isinstance(payload, jose.JOSEDictionary):
-            return payload
-
-        elif isinstance(payload, dict):
-            return jose.JOSEDictionary(payload)
-
-        else:
-            raise TypeError('"payload" must be a dict or JOSEDictionary')
-
-    def _validate_and_set_jti(self, payload, generate_jti):
-        if generate_jti:
-            if 'jti' in payload:
-                raise exceptions.InvalidClaim(
-                    'Cannot specify "generate_jti" with existing "jti" claim.')
-
-            else:
-                payload['jti'] = _generate_jti()
-
-        return payload
-
-    def _validate_and_set_typ(self, header):
-        if 'typ' in header and header['typ'].upper() != 'JWT':
-            raise exceptions.InvalidHeader('"typ" parameter must be "JWT"')
-
-        header['typ'] = 'JWT'
-
-        return header
+        return self.claims.get(name)
 
 
 def _generate_jti():
