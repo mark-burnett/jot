@@ -1,5 +1,5 @@
 from Crypto.PublicKey import RSA
-from jot import deserialize, JWE
+from jot import deserialize, jose, JWE
 from jot.codec import base64url_decode
 import unittest
 
@@ -46,7 +46,10 @@ cKqsC2Blwu1O7TPoV6ajuGixg9QJDEqNy4AzYMJcmqFOQY8cYtEjUtOlxgsbJ1Uz
 class TestEncryptionConsistency(unittest.TestCase):
     sample_data = [
         {
-            'header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
+#            'header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
+            'encrypt_alg': 'RSA1_5',
+            'encrypt_enc': 'A128CBC-HS256',
+            'payload_class': jose.JOSEString,
             'payload': 'this is a sample sequence to encrypt',
             'encrypt_key': RSA.importKey(PUBLIC_KEY),
             'decrypt_key': RSA.importKey(PRIVATE_KEY),
@@ -56,25 +59,24 @@ class TestEncryptionConsistency(unittest.TestCase):
 
     def test_round_trip(self):
         for data in self.sample_data:
-            initial_jwe = JWE(header=data['header'], payload=data['payload'])
-            initial_jwe.encrypt_with(data['encrypt_key'])
+            jo = data['payload_class'](data['payload'])
+            initial_jwe = jo.encrypt_with(data['encrypt_key'],
+                    alg=data['encrypt_alg'], enc=data['encrypt_enc'])
             serialization = initial_jwe.compact_serialize()
 
             second_jwe = deserialize(serialization)
-            second_jwe.verify_and_decrypt_with(data['decrypt_key'])
-            self.assertEqual(second_jwe.payload, data['payload'])
+            payload = second_jwe.verify_and_decrypt_with(data['decrypt_key'])
+            self.assertEqual(payload, jo)
 
     def test_ciphertext_different_each_time(self):
         for data in self.sample_data:
-            jwe1 = JWE(header=data['header'], payload=data['payload'])
-            jwe1.encrypt_with(data['encrypt_key'])
-            serialization1 = jwe1.compact_serialize()
+            jo = data['payload_class'](data['payload'])
+            jwe1 = jo.encrypt_with(data['encrypt_key'],
+                    alg=data['encrypt_alg'], enc=data['encrypt_enc'])
+            jwe2 = jo.encrypt_with(data['encrypt_key'],
+                    alg=data['encrypt_alg'], enc=data['encrypt_enc'])
 
-            jwe2 = JWE(header=data['header'], payload=data['payload'])
-            jwe2.encrypt_with(data['encrypt_key'])
-            serialization2 = jwe2.compact_serialize()
-
-            self.assertNotEqual(serialization1, serialization2)
+            self.assertNotEqual(jwe1.ciphertext, jwe2.ciphertext)
 
 
 SPEC_PRIV_KEY = RSA.construct((
@@ -137,5 +139,5 @@ class TestSpecSample(unittest.TestCase):
     def test_decrypt(self):
         for data in self.sample_data:
             jwe = deserialize(data['compact_serialization'])
-            jwe.verify_and_decrypt_with(data['decrypt_key'])
-            self.assertEqual(jwe.payload, data['expected_payload'])
+            result = jwe.verify_and_decrypt_with(data['decrypt_key'])
+            self.assertEqual(result, data['expected_payload'])

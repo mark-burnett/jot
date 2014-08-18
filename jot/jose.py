@@ -1,5 +1,5 @@
-from .codec import base64url_encode
-from jot import loaders
+from . import codec
+from . import loaders
 import abc
 import copy
 import json
@@ -53,19 +53,17 @@ class SignableMixin(CompactSerializable):
 
 class EncryptableMixin(CompactSerializable):
     def encrypted_header(self, alg, enc):
-        return {'alg': alg, 'enc': enc}
+        return JOSEHeader({'alg': alg, 'enc': enc})
 
     def encrypted_payload(self):
-        return self.compact_serialize()
+        return self
 
     def encrypt_with(self, key, alg=None, enc=None):
-        alg = self.get_encryption_alg(alg)
-        enc = self.get_encryption_enc(enc)
-
-        alg_cipher = loaders.get_alg_cipher(alg=alg, key=key)
-        enc_cipher = loaders.get_enc_cipher(enc=enc)
-
         header = self.encrypted_header(alg=alg, enc=enc)
+
+        alg_cipher = loaders.get_alg_cipher(alg=header['alg'], key=key)
+        enc_cipher = loaders.get_enc_cipher(enc=header['enc'])
+
         payload = self.encrypted_payload()
 
         encoded_header = header.compact_serialize()
@@ -76,9 +74,12 @@ class EncryptableMixin(CompactSerializable):
         encrypted_key = alg_cipher.encrypt_key(symmetric_key)
 
         from . import jwe
-        return jwe.JWE(header=header, encrypted_key=encrypted_key,
-                initialization_vector=initialization_vector,
-                ciphertext=ciphertext, authentication_tag=authentication_tag)
+        return jwe.JWE(
+                encoded_header=encoded_header,
+                encoded_encrypted_key=codec.base64url_encode(encrypted_key),
+                encoded_initialization_vector=codec.base64url_encode(initialization_vector),
+                encoded_ciphertext=codec.base64url_encode(ciphertext),
+                encoded_authentication_tag=codec.base64url_encode(authentication_tag))
 
 
 
@@ -91,7 +92,7 @@ class JOSEDictionary(dict, JOSEObject):
         JOSEObject.__init__(self)
 
     def compact_serialize(self):
-        return base64url_encode(json.dumps(self, separators=(',',':'),
+        return codec.base64url_encode(json.dumps(self, separators=(',',':'),
             sort_keys=True))
 
 
@@ -100,12 +101,23 @@ class JOSEHeader(JOSEDictionary):
         self.validate_alg(alg)
         self['alg'] = alg
 
+    def set_enc(self, enc):
+        self.validate_enc(enc)
+        self['enc'] = enc
+
     def validate_alg(self, alg):
         if 'alg' in self:
             if alg and alg != self['alg']:
                 raise exceptions.InvalidAlg(
                         'Specified alg (%s) does not match the exising value '
                         'in the header (%s).' % (alg, self.header['alg']))
+
+    def validate_enc(self, enc):
+        if 'enc' in self:
+            if enc and enc != self['enc']:
+                raise exceptions.InvalidEnc(
+                        'Specified enc (%s) does not match the exising value '
+                        'in the header (%s).' % (enc, self.header['enc']))
 
 
 class JOSEObjectWithHeader(JOSEObject):
@@ -118,12 +130,15 @@ class JOSEObjectWithHeader(JOSEObject):
         header.set_alg(alg)
         return header
 
+    def encrypted_header(self, alg, enc):
+        header = copy.copy(self.header)
+        header.set_alg(alg)
+        header.set_enc(enc)
+        return header
+
     @abc.abstractmethod
     def compact_serialize_without_header(self):
         return NotImplemented
-
-    def encrypted_header(self, alg, enc):
-        pass
 
     def _validate_header(self, header):
         if header is None:
@@ -145,7 +160,7 @@ class JOSEOctetStream(JOSEObject, bytes):
         JOSEObject.__init__(self)
 
     def compact_serialize(self):
-        return base64url_encode(self)
+        return codec.base64url_encode(self)
 
 
 class JOSEString(JOSEObject, str):
@@ -154,7 +169,7 @@ class JOSEString(JOSEObject, str):
         JOSEObject.__init__(self)
 
     def compact_serialize(self):
-        return base64url_encode(self)
+        return codec.base64url_encode(self)
 
 
 class JOSEUnicode(JOSEObject, unicode):
@@ -163,7 +178,7 @@ class JOSEUnicode(JOSEObject, unicode):
         JOSEObject.__init__(self)
 
     def compact_serialize(self):
-        return base64url_encode(self)
+        return codec.base64url_encode(self)
 
 
 

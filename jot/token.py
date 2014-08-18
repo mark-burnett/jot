@@ -24,8 +24,16 @@ class Token(jose.JOSEObjectWithHeader):
     def signed_payload(self):
         return self.claims
 
+    def encrypted_payload(self):
+        return self.compact_serialize_without_header()
+
     def signed_header(self, alg):
         header = super(Token, self).signed_header(alg)
+        header['typ'] = 'JWT'
+        return header
+
+    def encrypted_header(self, alg, enc):
+        header = super(Token, self).encrypted_header(alg, enc)
         header['typ'] = 'JWT'
         return header
 

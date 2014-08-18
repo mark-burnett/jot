@@ -48,6 +48,8 @@ class TestTokenRoundTrip(unittest.TestCase):
     sample_data = [
         {
             'sign_alg': 'HS256',
+            'encrypt_alg': 'RSA1_5',
+            'encrypt_enc': 'A128CBC-HS256',
             'claims': {'iss': 'joe', 'fancy': 'data'},
             'sign_key': base64url_decode(
                 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
@@ -55,14 +57,20 @@ class TestTokenRoundTrip(unittest.TestCase):
             'verify_key': base64url_decode(
                 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75'
                 'aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'),
+            'encrypt_key': RSA.importKey(PUBLIC_KEY),
+            'decrypt_key': RSA.importKey(PRIVATE_KEY),
         },
 
         {
             'sign_alg': 'RS256',
+            'encrypt_alg': 'RSA1_5',
+            'encrypt_enc': 'A256CBC-HS512',
             'claims': {'iss': 'joe', 'exp': 1300819380,
                 'http://example.com/is_root': True},
             'sign_key': RSA.importKey(PRIVATE_KEY),
             'verify_key': RSA.importKey(PUBLIC_KEY),
+            'encrypt_key': RSA.importKey(PUBLIC_KEY),
+            'decrypt_key': RSA.importKey(PRIVATE_KEY),
         },
     ]
 
@@ -82,3 +90,19 @@ class TestTokenRoundTrip(unittest.TestCase):
 
             self.assertEqual(deserialized_token.header, signed_token.header)
             self.assertEqual(deserialized_token.claims, original_token.claims)
+
+
+    def test_encryption_round_trip(self):
+        for data in self.sample_data:
+            original_token = Token(claims=data['claims'])
+            jwe = original_token.encrypt_with(data['encrypt_key'],
+                    alg=data['encrypt_alg'], enc=data['encrypt_enc'])
+
+            compact_serialization = jwe.compact_serialize()
+
+            deserialized_jwe = deserialize(compact_serialization)
+            t = deserialized_jwe.verify_and_decrypt_with(data['decrypt_key'])
+            self.assertIsInstance(t, Token)
+
+            self.assertEqual(t.header, jwe.header)
+            self.assertEqual(t.claims, original_token.claims)

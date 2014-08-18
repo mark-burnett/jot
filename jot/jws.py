@@ -54,12 +54,8 @@ class JWS(jose.JOSEObjectWithHeader):
         else:
             return pl_obj
 
-    @property
-    def alg(self):
-        return self.header['alg']
-
     def verify_with(self, key):
-        wrapper = get_signer(alg=self.alg, key=key)
+        wrapper = get_signer(alg=self.header['alg'], key=key)
         return wrapper.verify(self._signed_data(), self.signature)
 
     def verify_with_kid(self, keychain):
@@ -70,14 +66,4 @@ class JWS(jose.JOSEObjectWithHeader):
         return self.verify_with(keychain[kid])
 
     def _signed_data(self):
-#        print self.header
-#        print self.header.compact_serialize()
-#        print self.encoded_header
-#        print codec.base64url_decode(self.encoded_header)
-
-#        print self.payload_object.signed_payload()
-#        print self.payload_object.signed_payload().compact_serialize()
-#        print self.encoded_payload
-#        print codec.base64url_decode(self.encoded_payload)
-
         return '%s.%s' % (self.encoded_header, self.encoded_payload)
