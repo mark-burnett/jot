@@ -34,8 +34,11 @@ class SignableMixin(CompactSerializable):
     def signed_payload(self):
         return self
 
-    def sign_with(self, key, alg=None):
+    def sign_with(self, key, alg=None, kid=None):
         header = self.signed_header(alg=alg)
+        if kid:
+            header['kid'] = kid
+
         wrapper = loaders.get_signer(alg=header['alg'], key=key)
 
         encoded_header = header.compact_serialize()
@@ -58,8 +61,10 @@ class EncryptableMixin(CompactSerializable):
     def encrypted_payload(self):
         return self
 
-    def encrypt_with(self, key, alg=None, enc=None):
+    def encrypt_with(self, key, alg=None, enc=None, kid=None):
         header = self.encrypted_header(alg=alg, enc=enc)
+        if kid:
+            header['kid'] = kid
 
         alg_cipher = loaders.get_alg_cipher(alg=header['alg'], key=key)
         enc_cipher = loaders.get_enc_cipher(enc=header['enc'])
