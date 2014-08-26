@@ -1,10 +1,12 @@
+from . import spec_keys
 from Crypto.PublicKey import RSA
-from jot import deserialize, jose, JWE
+from jot import deserialize, jose
 from jot.codec import base64url_decode
+import jot
 import unittest
 
 
-PRIVATE_KEY = '''-----BEGIN RSA PRIVATE KEY-----
+PRIVATE_KEY = RSA.importKey('''-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAyM5QtdqcEALi+J/Jtv9XzQBmkN6yyhghquEWmPKIvBebpDnx
 fvCDg5OwthDGr6fZ9BCpCWvKwfQOPoAkLNA+A+BZSbYwgpQrSzIKzDmqEgN/fja9
 zdlsRc/d0/1+0fzIOZ0H8oOiM6lv1JhnyIBZZfi1286oM82KEVrgnynvgX1IBAZL
@@ -30,29 +32,21 @@ o11kAanbozxRKTvZrDOXPczjMymFTsUVb7EyziBg+fW2NiIJpyI+CsmTdiur+2hs
 a4849wKBgAh7a3lrgHZy18H67lppF63YoQnvIP6etv83t1syU1WIpHLHKrUG2Lxc
 cj14qA9O1abZbXu3G0m4QLvRjWIEtXVBfqak0fZSxe1yJARDjVGm5oZyH6amXF8q
 +LS3MD90D/MUQZJW6L/1ceJ9aYiLqzY769rL/Bdz9HjsLPGsDTlR
------END RSA PRIVATE KEY-----'''
+-----END RSA PRIVATE KEY-----''')
 
-PUBLIC_KEY = '''-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyM5QtdqcEALi+J/Jtv9X
-zQBmkN6yyhghquEWmPKIvBebpDnxfvCDg5OwthDGr6fZ9BCpCWvKwfQOPoAkLNA+
-A+BZSbYwgpQrSzIKzDmqEgN/fja9zdlsRc/d0/1+0fzIOZ0H8oOiM6lv1JhnyIBZ
-Zfi1286oM82KEVrgnynvgX1IBAZLtKu7ZYh9TPkigPirXIvUHvWu827a0YBnzCqs
-K9NLEsU1cYyZEBS5I9Z3Kxq4PJsr803qCCtz89jJPvpMVC+37IMPYnISOBG39Hmd
-cKqsC2Blwu1O7TPoV6ajuGixg9QJDEqNy4AzYMJcmqFOQY8cYtEjUtOlxgsbJ1Uz
-8wIDAQAB
------END PUBLIC KEY-----'''
+
+PUBLIC_KEY= PRIVATE_KEY.publickey()
 
 
 class TestEncryptionConsistency(unittest.TestCase):
     sample_data = [
         {
-#            'header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
             'encrypt_alg': 'RSA1_5',
             'encrypt_enc': 'A128CBC-HS256',
             'payload_class': jose.JOSEString,
             'payload': 'this is a sample sequence to encrypt',
-            'encrypt_key': RSA.importKey(PUBLIC_KEY),
-            'decrypt_key': RSA.importKey(PRIVATE_KEY),
+            'encrypt_key': PUBLIC_KEY,
+            'decrypt_key': PRIVATE_KEY,
         },
 
     ]
@@ -79,27 +73,6 @@ class TestEncryptionConsistency(unittest.TestCase):
             self.assertNotEqual(jwe1.ciphertext, jwe2.ciphertext)
 
 
-SPEC_PRIV_KEY = RSA.construct((
-    long(base64url_decode(
-            'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1'
-            'WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxk'
-            'nTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_Nxs'
-            'iIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4L'
-            'KjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZ'
-            'I0KQB0GaDWFLN-aEAw3vRw'
-        ).encode('hex'), 16),
-    long(base64url_decode('AQAB').encode('hex'), 16),
-    long(base64url_decode(
-            'VFCWOqXr8nvZNyaaJLXdnNPXZKRaWCjkU5Q2egQQpTBMwhprMzWzpR8Sx'
-            'q1OPThh_J6MUD8Z35wky9b8eEO0pwNS8xlh1lOFRRBoNqDIKVOku0aZb-rynq8cxjD'
-            'TLZQ6Fz7jSjR1Klop-YKaUHc9GsEofQqYruPhzSA-QgajZGPbE_0ZaVDJHfyd7UUBU'
-            'KunFMScbflYAAOYJqVIVwaYR5zWEEceUjNnTNo_CVSj-VvXLO5VZfCUAVLgW4dpf1S'
-            'rtZjSt34YLsRarSb127reG_DUwg9Ch-KyvjT1SkHgUWRVGcyly7uvVGRSDwsXypdrN'
-            'inPA4jlhoNdizK2zF2CWQ'
-        ).encode('hex'), 16)
-    ))
-
-
 class TestSpecSample(unittest.TestCase):
     sample_data = [
         {
@@ -115,7 +88,7 @@ class TestSpecSample(unittest.TestCase):
                 'KDlTtXchhZTGufMYmOYGS4HffxPSUrfmqCHXaI9wOGY.'
                 '9hH0vgRfYgPnAHOd8stkvw',
             'expected_header': {'alg': 'RSA1_5', 'enc': 'A128CBC-HS256'},
-            'decrypt_key': SPEC_PRIV_KEY,
+            'decrypt_key': spec_keys.jwe_private_key_2,
             'expected_payload': 'Live long and prosper.',
         },
         {
@@ -141,3 +114,65 @@ class TestSpecSample(unittest.TestCase):
             jwe = deserialize(data['compact_serialization'])
             result = jwe.verify_and_decrypt_with(data['decrypt_key'])
             self.assertEqual(result, data['expected_payload'])
+
+
+_NESTED_SERIALIZED_JWE = (
+    'eyJhbGciOiJSU0ExXzUiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiY3R5IjoiSldU'
+    'In0.'
+    'g_hEwksO1Ax8Qn7HoN-BVeBoa8FXe0kpyk_XdcSmxvcM5_P296JXXtoHISr_DD_M'
+    'qewaQSH4dZOQHoUgKLeFly-9RI11TG-_Ge1bZFazBPwKC5lJ6OLANLMd0QSL4fYE'
+    'b9ERe-epKYE3xb2jfY1AltHqBO-PM6j23Guj2yDKnFv6WO72tteVzm_2n17SBFvh'
+    'DuR9a2nHTE67pe0XGBUS_TK7ecA-iVq5COeVdJR4U4VZGGlxRGPLRHvolVLEHx6D'
+    'YyLpw30Ay9R6d68YCLi9FYTq3hIXPK_-dmPlOUlKvPr1GgJzRoeC9G5qCvdcHWsq'
+    'JGTO_z3Wfo5zsqwkxruxwA.'
+    'UmVkbW9uZCBXQSA5ODA1Mg.'
+    'VwHERHPvCNcHHpTjkoigx3_ExK0Qc71RMEParpatm0X_qpg-w8kozSjfNIPPXiTB'
+    'BLXR65CIPkFqz4l1Ae9w_uowKiwyi9acgVztAi-pSL8GQSXnaamh9kX1mdh3M_TT'
+    '-FZGQFQsFhu0Z72gJKGdfGE-OE7hS1zuBD5oEUfk0Dmb0VzWEzpxxiSSBbBAzP10'
+    'l56pPfAtrjEYw-7ygeMkwBl6Z_mLS6w6xUgKlvW6ULmkV-uLC4FUiyKECK4e3WZY'
+    'Kw1bpgIqGYsw2v_grHjszJZ-_I5uM-9RA8ycX9KqPRp9gc6pXmoU_-27ATs9XCvr'
+    'ZXUtK2902AUzqpeEUJYjWWxSNsS-r1TJ1I-FMJ4XyAiGrfmo9hQPcNBYxPz3GQb2'
+    '8Y5CLSQfNgKSGt0A4isp1hBUXBHAndgtcslt7ZoQJaKe_nNJgNliWtWpJ_ebuOpE'
+    'l8jdhehdccnRMIwAmU1n7SPkmhIl1HlSOpvcvDfhUN5wuqU955vOBvfkBOh5A11U'
+    'zBuo2WlgZ6hYi9-e3w29bR0C2-pp3jbqxEDw3iWaf2dc5b-LnR0FEYXvI_tYk5rd'
+    '_J9N0mg0tQ6RbpxNEMNoA9QWk5lgdPvbh9BaO195abQ.'
+    'AVO9iT5AV4CzvDJCdhSFlQ'
+)
+
+class TestNestedJWSJWE(unittest.TestCase):
+    def test_spec_sample(self):
+        jwe = deserialize(_NESTED_SERIALIZED_JWE)
+        jws = jwe.verify_and_decrypt_with(spec_keys.jwe_private_key_2)
+        self.assertTrue(jws.verify_with(spec_keys.jws_public_key))
+
+        t = jws.payload
+        self.assertEqual(dict(t), {
+            'exp': 1300819380,
+            'iss': 'joe',
+            'http://example.com/is_root': True,
+        })
+
+    def test_round_trip(self):
+        claims = {
+            'iss': 'http://example.com/jwt/example',
+            'claim1': 1,
+            'claim2': ['foo', 'bar'],
+        }
+
+        begin_token = jot.Token(claims)
+        begin_jws = begin_token.sign_with(spec_keys.jws_private_key,
+                alg='RS256')
+        begin_jwe = begin_jws.encrypt_with(spec_keys.jwe_public_key,
+                alg='RSA1_5', enc='A128CBC-HS256')
+
+        serialization = begin_jwe.compact_serialize()
+
+        end_jwe = deserialize(serialization)
+        end_jws = end_jwe.verify_and_decrypt_with(spec_keys.jwe_private_key)
+        end_jws = end_jwe.verify_and_decrypt_with(spec_keys.jwe_private_key)
+
+        self.assertTrue(end_jws.verify_with(spec_keys.jws_public_key))
+
+        end_token = end_jws.payload
+        self.assertIsInstance(end_token, jot.Token)
+        self.assertEqual(end_token.claims, claims)

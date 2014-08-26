@@ -63,7 +63,11 @@ class JWE(jose.JOSEObjectWithHeader):
                 self.authentication_tag)
 
         payload = enc_cipher.decrypt(self.ciphertext)
-        if self.header.get('typ', '').upper() == 'JWT':
+        if self.header.get('cty', '').upper() == 'JWT':
+            from jot import deserialize
+            return deserialize(payload)
+
+        elif self.header.get('typ', '').upper() == 'JWT':
             return token.Token(header=self.header,
                     claims=jose.factory(_simple_parse(payload)))
 

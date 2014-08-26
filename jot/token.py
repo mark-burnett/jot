@@ -68,6 +68,15 @@ class Token(jose.JOSEObjectWithHeader):
     def get_claim(self, name):
         return self.claims.get(name)
 
+    def set_claim_in_namespace(self, namespace, name, value):
+        pass
+
+    def set_claim(self, name, value):
+        pass
+
+    def is_audience(self, client_id):
+        return False
+
 
 def _generate_jti():
     return uuid.uuid4().hex

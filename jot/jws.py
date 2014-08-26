@@ -15,7 +15,7 @@ def _simple_parse(data):
 
 class JWS(jose.JOSEObjectWithHeader):
     def __init__(self, encoded_payload=None, encoded_header=None,
-            encoded_signature=None, signature=None):
+            encoded_signature=None, signature=None, _typ=None):
         self.encoded_header = encoded_header
         self.encoded_payload = encoded_payload
 
@@ -33,6 +33,10 @@ class JWS(jose.JOSEObjectWithHeader):
 
         header = jose.JOSEHeader(_simple_parse(encoded_header))
         super(JWS, self).__init__(header=header)
+
+        self._typ = _typ
+        if 'typ' in self.header:
+            self._typ = self.header['typ']
 
     def compact_serialize(self):
         return '%s.%s.%s' % (
@@ -67,3 +71,17 @@ class JWS(jose.JOSEObjectWithHeader):
 
     def _signed_data(self):
         return '%s.%s' % (self.encoded_header, self.encoded_payload)
+
+    def encrypted_header(self, alg, enc):
+        header = jose.JOSEHeader({
+            'alg': alg,
+            'enc': enc,
+        })
+
+        if self._typ:
+            header['cty'] = self._typ
+
+        return header
+
+    def encrypted_payload(self):
+        return self.compact_serialize()
