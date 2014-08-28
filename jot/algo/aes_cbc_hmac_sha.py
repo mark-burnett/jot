@@ -1,4 +1,5 @@
 from .padding import pkcs_7_pad, pkcs_7_unpad
+from constant_time_compare import compare
 from Crypto.Cipher import AES
 import struct
 import hmac
@@ -25,7 +26,7 @@ def encrypt(k, p, a, iv, hash_function):
 def verify(k, e, a, iv, t, hash_function):
     mac_key, enc_key = _split_key(k)
     actual_t = _sign(mac_key, a, iv, e, hash_function)
-    return t == actual_t
+    return compare(t, actual_t)
 
 
 def _split_key(k):

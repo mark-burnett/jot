@@ -1,1 +1,2 @@
+constant-time-compare==1.3
 pycrypto

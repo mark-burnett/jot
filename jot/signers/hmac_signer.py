@@ -1,4 +1,5 @@
 from .base import Signer
+from constant_time_compare import compare
 import hashlib
 import hmac
 import re
@@ -18,7 +19,7 @@ class HMACSigner(Signer):
         return digester.digest()
 
     def verify(self, data, signature):
-        return self.sign(data) == signature
+        return compare(self.sign(data), signature)
 
 
 _BITS_REGEX = re.compile(r'^HS(?P<bits>\d+)$')
