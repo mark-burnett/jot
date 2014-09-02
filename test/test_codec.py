@@ -22,6 +22,11 @@ class TestSampleDataFromSpecs(unittest.TestCase):
             self.assertEqual(base64url_decode(encoded), unencoded,
                 'Failed to decode data for: %r' % encoded)
 
+    def test_decoder_unicode(self):
+        for unencoded, encoded in self.sample_data:
+            self.assertEqual(base64url_decode(unicode(encoded)), unencoded,
+                'Failed to decode data for unicode version: %r' % encoded)
+
 
 class RountTripCodecTest(unittest.TestCase):
     sample_data = [
