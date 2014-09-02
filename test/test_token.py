@@ -137,3 +137,18 @@ class TestTokenValidation(unittest.TestCase):
             self.assertEqual(is_valid, token.is_valid,
                     'Failed to get expected token validation (%s) for claims %s'
                     % (is_valid, claims))
+
+    def test_aud_validation(self):
+        token_claims = [
+            (False, 'bob', {}),
+            (True, 'bob', {'aud': 'bob'}),
+            (True, 'bob', {'aud': ['bob']}),
+            (True, 'bob', {'aud': ['bob', 'james']}),
+            (True, 'bob', {'aud': ['alice', 'bob']}),
+            (False, 'bob', {'aud': ['alice', 'james']}),
+        ]
+        for is_valid, aud, claims in token_claims:
+            token = Token(claims=claims)
+            self.assertEqual(is_valid, token.has_audience(aud),
+                    "Didn't get expected answer (%s) for aud (%s), claims %s"
+                    % (is_valid, aud, claims))

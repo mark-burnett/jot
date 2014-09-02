@@ -91,8 +91,9 @@ class Token(jose.JOSEObjectWithHeader):
     def set_claim(self, name, value):
         pass
 
-    def is_audience(self, client_id):
-        return False
+    def has_audience(self, expected_aud):
+        return (expected_aud == self.claims.get('aud', object())
+                or expected_aud in self.claims.get('aud', []))
 
 
 def _generate_jti():
