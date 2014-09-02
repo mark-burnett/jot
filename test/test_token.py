@@ -2,6 +2,8 @@ from Crypto.PublicKey import RSA
 from jot.codec import base64url_decode
 from jot import deserialize
 from jot.token import Token
+import datetime
+import time
 import unittest
 
 
@@ -106,3 +108,32 @@ class TestTokenRoundTrip(unittest.TestCase):
 
             self.assertEqual(t.header, jwe.header)
             self.assertEqual(t.claims, original_token.claims)
+
+
+def now_plus(seconds):
+    now = int(time.mktime(datetime.datetime.utcnow().timetuple()))
+    return now + seconds
+
+
+class TestTokenValidation(unittest.TestCase):
+    def test_exp_and_iat_validation(self):
+        token_claims = [
+            (True, {}),
+            (True, {
+                'exp': now_plus(30),
+            }),
+            (False, {
+                'exp': now_plus(-30),
+            }),
+            (False, {
+                'iat': now_plus(30),
+            }),
+            (True, {
+                'iat': now_plus(-30),
+            }),
+        ]
+        for is_valid, claims in token_claims:
+            token = Token(claims=claims)
+            self.assertEqual(is_valid, token.is_valid,
+                    'Failed to get expected token validation (%s) for claims %s'
+                    % (is_valid, claims))

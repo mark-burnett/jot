@@ -1,5 +1,7 @@
 from . import exceptions
 from . import jose
+import datetime
+import time
 import uuid
 
 
@@ -36,6 +38,21 @@ class Token(jose.JOSEObjectWithHeader):
         header = super(Token, self).encrypted_header(alg, enc)
         header['typ'] = 'JWT'
         return header
+
+    @property
+    def is_valid(self):
+        now = int(time.mktime(datetime.datetime.utcnow().timetuple()))
+        if 'exp' in self.claims:
+            exp = int(self.claims['exp'])
+            if now > exp:
+                return False
+
+        if 'iat' in self.claims:
+            if now < int(self.claims['iat']):
+                return False
+
+        return True
+
 
     def _validate_claims(self, claims):
         if isinstance(claims, jose.JOSEDictionary):
