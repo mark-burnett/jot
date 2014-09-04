@@ -85,11 +85,11 @@ class Token(jose.JOSEObjectWithHeader):
     def get_claim(self, name):
         return self.claims.get(name)
 
-    def set_claim_in_namespace(self, namespace, name, value):
-        pass
+    def set_claim_in_namespace(self, namespace, name, value, uuid_version=5):
+        self.claims[_create_uuid_name(namespace, name, uuid_version)] = value
 
     def set_claim(self, name, value):
-        pass
+        self.claims[name] = value
 
     def has_audience(self, expected_aud):
         return (expected_aud == self.claims.get('aud', object())
